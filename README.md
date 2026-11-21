@@ -42,6 +42,63 @@ An interactive, browser-based tool that transforms abstract recursive algorithms
 
 ---
 
+## 🧪 Native C++20 mode (compiled, executed and traced with GDB)
+
+The **Native C++20** tab (the default page) does not interpret or transpile anything.
+Your C++ is compiled with `g++`/`clang++ -std=c++20 -g -O0`, executed, and recorded by
+GDB through a small local service. The browser only replays what the debugger recorded.
+
+```powershell
+npm install
+npm run native          # UI on http://localhost:5173 + trace service on 127.0.0.1:5180
+npm run native:verify   # end-to-end checks against the reference programs
+```
+
+**Toolchain.** On Windows the compiler and debugger run inside WSL (Ubuntu); on Linux they run
+directly. Needed there: `g++` (12 recommended) or `clang++`, `gdb` (with Python, the Ubuntu
+package has it) and `python3`, e.g. `sudo apt install g++-12 gdb`. Set `RV_WSL_DISTRO` to pick a
+WSL distro, `RV_NATIVE_PORT` to move the service.
+
+**Workflow.** Paste your LeetCode solution into `solution.cpp` (it is compiled byte-for-byte, so
+trace line numbers are your line numbers). `driver.cpp` holds `main()`, the headers and `using`
+declarations LeetCode normally supplies, and `#include "solution.cpp"`. Input comes from stdin;
+`#include "lc.hpp"` gives `lc::read<T>(std::cin)` / `lc::str(x)` for LeetCode-style values such as
+`[2,3,6,7]` or `[["a","b"]]`. Workspaces are kept in your browser (localStorage).
+
+**What one step is.** A *call* step: a function of `solution.cpp` was entered (parameters bound,
+first line about to run). A *line* step: execution reached a new source line in the same
+invocation — GDB's own `step` rule, so a line with several operations is one step and a loop
+header appears once per iteration. A *return* step: the callee returned (value captured at the
+return address); the caller is stopped in the middle of the calling line. Values are read from
+memory at the stop, i.e. **before** the highlighted line runs. Stepping backward shows the values
+recorded at that step, including earlier contents of shared objects.
+
+**What you see.** Every invocation has its own id (`#7 backtrack`). The stack shows which frame is
+active and which are waiting (and where); on a return the parent that resumes is highlighted and
+"changed while #N ran" lists what its callee changed. Variables are bound to memory addresses, so
+references (`unsigned int& p1`) show as one shared object across frames while by-value locals are
+each frame's own copy. Element accesses on the current line (`memo[available]`) are shown with the
+index (binary and decimal) and the stored value. Unsigned integers default to binary (`1000₂ = 8`,
+set bits `{4}`), signed ones to decimal; click any value to switch. Labels: *not initialized yet*,
+*out of scope*, *unavailable*, and a banner when a trace limit is reached.
+
+**Limits.** Only `solution.cpp` is traced (the driver and the standard library run natively and
+are not stepped into). Default limit 25 000 recorded steps (~0.4 ms per step); after the limit the
+program keeps running untraced and the page reports whether it finished, its output and the root
+call's return value. Scalar arrays/vectors are tracked element by element (up to 2²⁰ elements);
+other containers (`map`, `unordered_map`, `set`, `deque`, …) are shown with GDB's printers as text;
+structs one level deep through pointers. Single-threaded programs; x86-64 only. The service runs
+the code you paste on your machine (inside WSL as your user), listens on 127.0.0.1 only and rejects
+requests from other origins.
+
+How it works: `native/server.mjs` (Node, no dependencies) → `native/runner/rv_job.py` (compile,
+direct run, GDB run) → `native/runner/rv_tracer.py` (GDB Python: breakpoints on every line-table
+row of the traced file, return-site breakpoints / `FinishBreakpoint`s for return values, memory
+snapshots diffed per step). The React UI is in `src/components/native` and
+`src/lib/native/traceModel.js`.
+
+---
+
 ## 🚀 Quick Start
 
 ### Prerequisites

@@ -11,6 +11,9 @@ function App() {
     <HelmetProvider>
       <Router>
         <Routes>
+          {/* Native C++20 workspace (compile + GDB trace through the local service) */}
+          <Route path="/native" element={<RecursionVisualizer />} />
+
           {/* Shareable Visualization Routes */}
           <Route path="/visualize/:slug" element={<RecursionVisualizer />} />
           <Route path="/visualize" element={<RecursionVisualizer />} />

@@ -9,7 +9,10 @@
     "build": "vite build && node scripts/postbuild.js",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "native": "node scripts/native-dev.mjs",
+    "native:server": "node native/server.mjs",
+    "native:verify": "node native/test/verify-native.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.2",

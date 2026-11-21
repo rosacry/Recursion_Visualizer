@@ -1,11 +1,24 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { BookOpen, Code2 } from 'lucide-react'
+import { BookOpen, Code2, Cpu } from 'lucide-react'
 
 export default function ModeToggle({ mode, onModeChange }) {
   return (
     <div className="inline-flex items-center rounded-xl border border-border/60 bg-muted/30 p-1 shadow-sm">
+      <button
+        onClick={() => onModeChange('native')}
+        className={`flex items-center justify-center rounded-lg px-5 py-2 text-sm font-medium transition-all duration-200 ${
+          mode === 'native'
+            ? 'bg-card text-foreground shadow-sm ring-1 ring-border/50'
+            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+        }`}
+        title="Compile your C++20 with g++/clang++ and trace the real execution with GDB"
+      >
+        <Cpu className="mr-2 h-4 w-4" />
+        Native C++20
+      </button>
+
       <button
         onClick={() => onModeChange('examples')}
         className={`flex items-center justify-center rounded-lg px-5 py-2 text-sm font-medium transition-all duration-200 ${
@@ -27,7 +40,7 @@ export default function ModeToggle({ mode, onModeChange }) {
         }`}
       >
         <Code2 className="mr-2 h-4 w-4" />
-        Custom code
+        Custom Java (transpiled)
       </button>
     </div>
   )

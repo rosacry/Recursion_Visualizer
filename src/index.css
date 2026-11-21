@@ -104,6 +104,14 @@
   }
 }
 
+@layer base {
+  /* Show code exactly as typed: no ligatures (`!=` must not turn into `≠`). */
+  code, pre, kbd, samp, textarea, .font-mono {
+    font-variant-ligatures: none;
+    font-feature-settings: 'liga' 0, 'calt' 0;
+  }
+}
+
 @layer utilities {
   /* Hide scrollbar for Chrome, Safari and Opera */
   .scrollbar-hide::-webkit-scrollbar {

@@ -13,6 +13,7 @@ import ControlPanel from '@/components/recursion/ControlPanel'
 import ExampleSelector, { EXAMPLES } from '@/components/recursion/ExampleSelector'
 import ModeToggle from '@/components/recursion/ModeToggle'
 import CustomCodePanel from '@/components/recursion/CustomCodePanel'
+import NativeWorkspace from '@/components/native/NativeWorkspace'
 import { 
   getAlgorithmByIdOrSlug, 
   algorithmSimulators, 
@@ -29,7 +30,9 @@ export default function RecursionVisualizer({ initialExampleId, children }) {
   const targetIdOrSlug = slug || initialExampleId
   const initialExample = getAlgorithmByIdOrSlug(targetIdOrSlug)
 
-  const [mode, setMode] = useState('examples')
+  // Native C++20 is the default workspace at / and /native; example routes (/visualize/:slug, SEO pages) open the examples.
+  const [mode, setMode] = useState(() =>
+    !slug && (location.pathname === '/' || location.pathname.startsWith('/native')) ? 'native' : 'examples')
   const [selectedExample, setSelectedExample] = useState(initialExample)
   const [code, setCode] = useState(initialExample.code)
   const [nodes, setNodes] = useState([])
@@ -361,7 +364,7 @@ export default function RecursionVisualizer({ initialExampleId, children }) {
     })
   }, [selectedExample, toast])
 
-  const showVisualizer = mode === 'examples' || !!customCodeData
+  const showVisualizer = mode === 'examples' || (mode === 'custom' && !!customCodeData)
   const toggleTreeExpand = useCallback(() => setIsTreeExpanded(prev => !prev), [])
 
   return (
@@ -378,7 +381,7 @@ export default function RecursionVisualizer({ initialExampleId, children }) {
         >
           <ModeToggle mode={mode} onModeChange={handleModeChange} />
 
-          <div className="flex items-center gap-2">
+          <div className={`flex items-center gap-2 ${mode === 'native' ? 'hidden' : ''}`}>
             <Button
               id="share-button"
               onClick={handleCopyShareLink}
@@ -403,7 +406,11 @@ export default function RecursionVisualizer({ initialExampleId, children }) {
 
         <motion.div className="mb-5" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <AnimatePresence mode="wait">
-            {mode === 'examples' ? (
+            {mode === 'native' ? (
+              <motion.div key="native" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                <NativeWorkspace />
+              </motion.div>
+            ) : mode === 'examples' ? (
               <motion.div key="examples" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
                 <ExampleSelector selectedExample={selectedExample} onSelect={handleSelectExample} onInputChange={handleInputChange} />
               </motion.div>
